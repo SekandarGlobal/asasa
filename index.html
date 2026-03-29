@@ -3,83 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STEALTH | INDUSTRIAL</title>
+    <title>STEALTH | VANISH</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --bg: #000; --fg: #fff; --border: #222; }
-        * { box-sizing: border-box; font-family: 'SF Mono', monospace; }
-        body { background: var(--bg); color: var(--fg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .vault { border: 1px solid var(--border); padding: 30px; width: 95%; max-width: 450px; background: #050505; }
-        .header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .log { font-size: 8px; color: #444; height: 40px; overflow-y: auto; text-transform: uppercase; margin-bottom: 10px; border-left: 1px solid #222; padding-left: 10px; }
-        #qrcode { background: white; padding: 15px; margin: 20px auto; width: 230px; height: 230px; display: none; justify-content: center; align-items: center; }
+        * { box-sizing: border-box; font-family: 'SF Mono', monospace; cursor: crosshair; }
+        body { background: var(--bg); color: var(--fg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        
+        .vault-container { 
+            border: 1px solid var(--border); padding: 40px; width: 95%; max-width: 450px; 
+            background: #050505; position: relative; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        /* The Vanish Animation */
+        .vanish-effect { 
+            opacity: 0; filter: blur(20px) brightness(2); transform: scale(0.9) translateY(-20px); 
+            pointer-events: none; letter-spacing: 10px;
+        }
+
+        .header { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 10px; letter-spacing: 2px; }
+        .log-stream { font-size: 8px; color: #444; height: 30px; overflow: hidden; text-transform: uppercase; margin-bottom: 20px; }
+        
+        #qrcode { background: white; padding: 15px; margin: 0 auto 20px; width: 230px; height: 230px; display: none; justify-content: center; align-items: center; border-radius: 2px; }
         #qrcode img { width: 200px !important; height: 200px !important; }
-        .btn { background: #fff; color: #000; padding: 20px; width: 100%; border: none; font-weight: 900; cursor: pointer; letter-spacing: 2px; }
-        .btn:disabled { background: #111; color: #333; }
-        .vitals { margin-top: 20px; display: none; }
-        .bar { height: 1px; background: #111; width: 100%; margin-top: 10px; position: relative; }
-        .fill { height: 1px; background: #fff; width: 0%; box-shadow: 0 0 10px #fff; transition: width 0.1s; }
-        .meta-text { font-size: 10px; color: #666; margin-top: 10px; word-break: break-all; }
+
+        .btn { background: #fff; color: #000; padding: 20px; width: 100%; border: none; font-weight: 900; cursor: pointer; letter-spacing: 4px; transition: 0.3s; }
+        .btn:disabled { background: #111; color: #333; cursor: not-allowed; letter-spacing: 1px; }
+
+        .vitals-box { margin-top: 30px; display: none; }
+        .progress-meta { display: flex; justify-content: space-between; font-size: 9px; color: #888; margin-bottom: 8px; }
+        .bar-track { height: 1px; background: #111; width: 100%; position: relative; }
+        .bar-fill { height: 1px; background: #fff; width: 0%; box-shadow: 0 0 15px #fff; transition: width 0.1s; }
+
+        #url-link { font-size: 9px; color: #444; margin-top: 20px; word-break: break-all; text-align: center; cursor: pointer; }
+        #url-link:hover { color: #fff; }
     </style>
 </head>
 <body>
 
-<div class="vault" id="main-vault">
+<div class="vault-container" id="main-ui">
     <div class="header">
-        <b>STEALTH.v3</b>
-        <span id="node-id">OFFLINE</span>
+        <b id="mode-tag">BEAM.VANISH</b>
+        <span id="node-status">OFFLINE</span>
     </div>
-    
-    <div class="log" id="console">SYSTEM READY...</div>
 
-    <div id="setup-view">
+    <div class="log-stream" id="log">AWAITING ENCRYPTED INPUT...</div>
+
+    <div id="action-area">
         <input type="file" id="file-input" style="display:none">
-        <button class="btn" id="init-btn" onclick="document.getElementById('file-input').click()">SELECT SOURCE</button>
+        <button class="btn" id="main-btn" onclick="document.getElementById('file-input').click()">INITIALIZE</button>
         <div id="qrcode"></div>
-        <div id="url-display" class="meta-text" style="text-align:center; cursor:pointer;" onclick="copyUrl()"></div>
+        <div id="url-link" onclick="copyUrl()"></div>
     </div>
 
-    <div class="vitals" id="vitals">
-        <div style="display:flex; justify-content: space-between; font-size: 10px;">
-            <span id="v-speed">0 MB/S</span>
-            <span id="v-pct">0%</span>
+    <div class="vitals-box" id="vitals">
+        <div class="progress-meta">
+            <span id="v-speed">0.00 MB/S</span>
+            <b id="v-pct">0%</b>
         </div>
-        <div class="bar"><div class="fill" id="fill"></div></div>
-        <div class="meta-text" id="m-name">FILE: --</div>
+        <div class="bar-track"><div class="bar-fill" id="fill"></div></div>
     </div>
 </div>
 
 <script>
-    // Industrial STUN config to bypass firewalls (Google's Public Servers)
-    const peerConfig = {
-        config: {
-            'iceServers': [
-                { url: 'stun:stun.l.google.com:19302' },
-                { url: 'stun:stun1.l.google.com:19302' }
-            ]
-        }
-    };
-
-    const peer = new Peer(peerConfig);
-    let conn;
-    let selectedFile;
-    let startTime;
-
-    function log(msg) {
-        const c = document.getElementById('console');
-        c.innerHTML = msg + "<br>" + c.innerHTML;
-    }
-
-    peer.on('open', (id) => {
-        document.getElementById('node-id').innerText = "ID: " + id.substring(0,6);
-        log("NODE ACTIVE: " + id);
-        
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('p')) startReceiver(params.get('p'));
+    const peer = new Peer({
+        config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }, { url: 'stun:stun1.l.google.com:19302' }]}
     });
 
-    peer.on('error', (err) => log("PEER ERROR: " + err.type));
+    let conn, selectedFile, startTime;
+    const ui = document.getElementById('main-ui');
+    const logEl = document.getElementById('log');
+
+    function updateLog(m) { logEl.innerText = m; }
+
+    peer.on('open', (id) => {
+        document.getElementById('node-status').innerText = "NODE:" + id.substring(0,6);
+        const p = new URLSearchParams(window.location.search).get('p');
+        if (p) runReceiver(p);
+    });
 
     // SENDER
     document.getElementById('file-input').onchange = (e) => {
@@ -88,79 +90,72 @@
 
         const url = window.location.origin + window.location.pathname + "?p=" + peer.id;
         document.getElementById('qrcode').style.display = 'flex';
-        document.getElementById('url-display').innerText = url;
+        document.getElementById('url-link').innerText = url;
         new QRCode(document.getElementById('qrcode'), { text: url, width: 200, height: 200 });
         
-        document.getElementById('init-btn').innerText = "AWAITING PEER...";
-        document.getElementById('init-btn').disabled = true;
-        log("SENDER MODE: READY FOR SCAN");
+        document.getElementById('main-btn').innerText = "PENDING SCAN...";
+        document.getElementById('main-btn').disabled = true;
+        updateLog("SOURCE ENCRYPTED. AWAITING PEER.");
 
         peer.on('connection', (c) => {
             conn = c;
-            log("PEER CONNECTED");
             conn.on('open', () => {
-                log("HANDSHAKE COMPLETE. BEAMING...");
+                updateLog("PEER LINKED. INITIATING BEAM.");
                 conn.send({ type: 'meta', name: selectedFile.name, size: selectedFile.size });
-                streamFile(selectedFile);
+                beamData(selectedFile);
             });
+            conn.on('data', (d) => { if(d.type === 'complete') triggerVanish("FILE DELIVERED"); });
         });
     };
 
-    async function streamFile(file) {
+    async function beamData(file) {
         document.getElementById('vitals').style.display = 'block';
-        document.getElementById('m-name').innerText = "BEAMING: " + file.name;
         startTime = Date.now();
-        const chunkSize = 64 * 1024;
+        const chunkSize = 128 * 1024;
         let offset = 0;
 
         while (offset < file.size) {
             const chunk = await file.slice(offset, offset + chunkSize).arrayBuffer();
             conn.send({ type: 'chunk', data: chunk });
             offset += chunk.byteLength;
-            updateUI(offset, file.size);
+            syncUI(offset, file.size);
         }
         conn.send({ type: 'done' });
-        log("UPLOAD FINISHED");
     }
 
     // RECEIVER
-    function startReceiver(pid) {
-        log("RECEIVER MODE: LINKING TO " + pid);
-        document.getElementById('init-btn').innerText = "CONNECTING...";
-        document.getElementById('init-btn').disabled = true;
+    function runReceiver(pid) {
+        updateLog("LINKING TO NODE...");
+        document.getElementById('main-btn').innerText = "CONNECTING...";
+        document.getElementById('main-btn').disabled = true;
 
         conn = peer.connect(pid, { reliable: true });
+        let chunks = [], received = 0, total = 0, name = "";
 
-        let chunks = [];
-        let received = 0;
-        let total = 0;
-        let name = "";
-
-        conn.on('open', () => log("LINK ESTABLISHED"));
         conn.on('data', (d) => {
             if (d.type === 'meta') {
                 total = d.size; name = d.name;
                 document.getElementById('vitals').style.display = 'block';
-                document.getElementById('m-name').innerText = "RECEIVING: " + name;
+                document.getElementById('main-btn').style.display = 'none';
                 startTime = Date.now();
+                updateLog("RECEIVING: " + name);
             }
             if (d.type === 'chunk') {
                 chunks.push(d.data);
                 received += d.data.byteLength;
-                updateUI(received, total);
+                syncUI(received, total);
             }
             if (d.type === 'done') {
                 const blob = new Blob(chunks);
                 const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = name; a.click();
-                log("DOWNLOAD COMPLETE");
-                setTimeout(() => window.location.href = window.location.origin + window.location.pathname, 2000);
+                a.href = URL.createObjectURL(blob); a.download = name; a.click();
+                conn.send({ type: 'complete' });
+                triggerVanish("BEAM SUCCESSFUL");
             }
         });
     }
 
-    function updateUI(cur, tot) {
+    function syncUI(cur, tot) {
         const pct = Math.floor((cur / tot) * 100);
         document.getElementById('fill').style.width = pct + "%";
         document.getElementById('v-pct').innerText = pct + "%";
@@ -168,9 +163,20 @@
         document.getElementById('v-speed').innerText = speed.toFixed(2) + " MB/S";
     }
 
+    function triggerVanish(msg) {
+        updateLog(msg);
+        setTimeout(() => {
+            ui.classList.add('vanish-effect');
+            // Hard reset after animation finishes
+            setTimeout(() => {
+                window.location.href = window.location.origin + window.location.pathname;
+            }, 800);
+        }, 1500);
+    }
+
     function copyUrl() {
-        navigator.clipboard.writeText(document.getElementById('url-display').innerText);
-        log("URL COPIED");
+        navigator.clipboard.writeText(document.getElementById('url-link').innerText);
+        updateLog("URL COPIED TO CLIPBOARD");
     }
 </script>
 </body>
