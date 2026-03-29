@@ -54,7 +54,7 @@
         .card {
             background: rgba(17,17,17,0.85); border: 1px solid var(--border);
             border-radius: var(--radius-lg); padding: 32px;
-            width: 100%; max-width: 520px; position: relative; z-index: 1;
+            width: 100%; max-width: 400px; position: relative; z-index: 1;
             box-shadow: var(--shadow); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
         .card.state-sharing .header, .card.state-sharing .status-bar,
@@ -541,6 +541,7 @@ class BeamApp {
         if (!this.files.length) return;
         this.isSender = true;
         document.querySelector('.card').className = 'card state-sharing';
+        this.setStatus('online', 'AWAITING RECEIVER');
         if (this.peer && this.peer.id) {
             const shareUrl = `${window.location.origin}${window.location.pathname}?p=${this.peer.id}`;
             document.getElementById('link-section').style.display = 'flex';
@@ -580,23 +581,25 @@ class BeamApp {
 
         for (let i = 0; i < this.files.length; i++) {
             const file = this.files[i];
-            this.conn.send({ type: 'file-start', name: file.name, size: file.size, index: i });
+            try { this.conn.send({ type: 'file-start', name: file.name, size: file.size, index: i }); } catch(e) { this.log('Send error: '+e, 'err'); break; }
             this.log(`Sending file ${i + 1}: ${file.name}`);
 
             let offset = 0;
             while (offset < file.size) {
+                while (this.conn.bufferedAmount > 1024 * 1024) await this.sleep(50);
                 const end = Math.min(offset + this.chunkSize, file.size);
                 const chunk = await file.slice(offset, end).arrayBuffer();
                 const encrypted = await this.encryptChunk(chunk);
-                this.conn.send({ type: 'chunk', data: encrypted, index: i });
+                try { this.conn.send({ type: 'chunk', data: encrypted, index: i }); } catch(e) { this.log('Chunk send error: '+e, 'err'); break; }
                 offset += (end - offset);
                 this.transferredBytes += (encrypted.byteLength || (end - offset));
                 this.updateProgress();
+                await this.sleep(0);
             }
-            this.conn.send({ type: 'file-end', index: i });
+            try { this.conn.send({ type: 'file-end', index: i }); } catch(e) { this.log('File-end error: '+e, 'err'); break; }
             this.log(`Done: ${file.name}`, 'ok');
         }
-        this.conn.send({ type: 'done' });
+        try { this.conn.send({ type: 'done' }); } catch(e){}
         this.log('All files sent!', 'ok');
         this.onTransferDone();
     }
