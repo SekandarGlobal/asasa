@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BEAM.v3 — P2P File Transfer</title>
+    <link rel="icon" type="image/png" href="https://ik.imagekit.io/f8dc2modt/undraw_male-athlete-avatar_dabn.png?updatedAt=1771493946260">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -35,7 +36,6 @@
             touch-action: manipulation;
         }
 
-        /* Toast */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
         .toast {
             background: var(--surface); border: 1px solid var(--border);
@@ -49,7 +49,6 @@
         @keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(40px); } }
 
-        /* Main Card */
         .card {
             background: var(--surface); border: 1px solid var(--border);
             border-radius: var(--radius-lg); padding: 32px;
@@ -57,9 +56,9 @@
             box-shadow: var(--shadow);
         }
 
-        /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
-        .logo { font-weight: 900; letter-spacing: -1.5px; font-size: 22px; color: var(--fg); }
+        .logo { font-weight: 900; letter-spacing: -1.5px; font-size: 22px; color: var(--fg); display: flex; align-items: center; gap: 8px; }
+        .logo-img { width: 28px; height: 28px; border-radius: 6px; }
         .logo span { color: var(--fg3); font-weight: 400; font-size: 12px; margin-left: 6px; }
         .header-actions { display: flex; gap: 8px; align-items: center; }
         .icon-btn {
@@ -71,17 +70,13 @@
         }
         .icon-btn:hover { color: var(--fg); border-color: var(--border2); }
 
-        /* Status Bar */
         .status-bar {
             display: flex; align-items: center; gap: 8px;
             padding: 10px 14px; background: var(--surface2);
             border: 1px solid var(--border); border-radius: var(--radius);
             margin-bottom: 20px; font-size: 10px; color: var(--fg2);
         }
-        .status-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: var(--error); flex-shrink: 0;
-        }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--error); flex-shrink: 0; }
         .status-dot.online { background: var(--success); animation: pulse 2s infinite; }
         .status-dot.connecting { background: var(--warn); animation: pulse 0.8s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -90,23 +85,19 @@
         .signal-bar { width: 3px; background: var(--fg3); border-radius: 1px; }
         .signal-bar.active { background: var(--success); }
 
-        /* Drop Zone */
         .drop-zone {
             border: 2px dashed var(--border2); border-radius: var(--radius-lg);
             padding: 40px 20px; text-align: center; cursor: pointer;
             transition: all 0.2s; position: relative; overflow: hidden;
             margin-bottom: 16px;
         }
-        .drop-zone:hover, .drop-zone.dragover {
-            border-color: var(--fg); background: var(--accent-dim);
-        }
+        .drop-zone:hover, .drop-zone.dragover { border-color: var(--fg); background: var(--accent-dim); }
         .drop-zone.dragover { transform: scale(1.01); }
         .drop-zone-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
         .drop-zone-text { font-size: 11px; color: var(--fg2); }
         .drop-zone-text b { color: var(--fg); }
         .drop-zone input[type="file"] { display: none; }
 
-        /* File List */
         .file-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
         .file-item {
             display: flex; align-items: center; gap: 10px;
@@ -119,17 +110,10 @@
         .file-info { flex: 1; min-width: 0; }
         .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .file-meta { color: var(--fg3); font-size: 9px; margin-top: 2px; }
-        .file-preview {
-            width: 40px; height: 40px; border-radius: 4px;
-            object-fit: cover; flex-shrink: 0;
-        }
-        .file-remove {
-            background: none; border: none; color: var(--fg3);
-            cursor: pointer; font-size: 14px; padding: 4px;
-        }
+        .file-preview { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+        .file-remove { background: none; border: none; color: var(--fg3); cursor: pointer; font-size: 14px; padding: 4px; }
         .file-remove:hover { color: var(--error); }
 
-        /* QR & Link */
         .link-section { margin-bottom: 16px; display: none; }
         .qr-wrap {
             background: #fff; padding: 16px; border-radius: var(--radius);
@@ -145,7 +129,6 @@
         }
         .link-box:hover { border-color: var(--fg); color: var(--fg); }
 
-        /* Progress */
         .progress-section { display: none; margin-bottom: 16px; }
         .progress-header { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 8px; }
         .progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
@@ -155,15 +138,11 @@
             box-shadow: 0 0 8px rgba(255,255,255,0.3);
         }
         [data-theme="light"] .progress-fill { box-shadow: 0 0 8px rgba(0,0,0,0.2); }
-        .progress-stats {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
-            margin-top: 10px;
-        }
+        .progress-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
         .stat { text-align: center; }
         .stat-label { font-size: 8px; color: var(--fg3); text-transform: uppercase; letter-spacing: 1px; }
         .stat-value { font-size: 12px; font-weight: 700; margin-top: 2px; }
 
-        /* Actions */
         .actions { display: flex; gap: 8px; }
         .btn {
             flex: 1; padding: 14px; border: none; border-radius: var(--radius);
@@ -177,7 +156,6 @@
         .btn-secondary:hover { border-color: var(--fg2); }
         .btn-danger { background: var(--error); color: #000; }
 
-        /* History */
         .history-section { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px; display: none; }
         .history-title { font-size: 9px; color: var(--fg3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
         .history-list { display: flex; flex-direction: column; gap: 4px; }
@@ -191,7 +169,6 @@
         .history-status { margin-left: 8px; }
         .history-status.done { color: var(--success); }
 
-        /* Debug Log */
         .debug-section { margin-top: 12px; display: none; }
         .debug-log {
             background: var(--bg); border: 1px solid var(--border);
@@ -205,7 +182,6 @@
         .debug-line.ok { color: var(--success); }
         .debug-line.warn { color: var(--warn); }
 
-        /* Responsive */
         @media (max-width: 560px) {
             .card { padding: 20px; }
             .drop-zone { padding: 30px 16px; }
@@ -219,7 +195,7 @@
 
 <div class="card">
     <div class="header">
-        <div class="logo">BEAM<span>v3</span></div>
+        <div class="logo"><img src="https://ik.imagekit.io/f8dc2modt/undraw_male-athlete-avatar_dabn.png?updatedAt=1771493946260" alt="BEAM" class="logo-img"> BEAM<span>v3</span></div>
         <div class="header-actions">
             <button class="icon-btn" onclick="app.toggleDebug()" title="Debug log">&#9881;</button>
             <button class="icon-btn" onclick="app.toggleTheme()" title="Toggle theme">&#9787;</button>
@@ -287,13 +263,12 @@ class BeamApp {
         this.history = [];
         this.isSender = false;
         this.isReceiver = false;
+        this.connected = false;
         this.startTime = 0;
         this.totalBytes = 0;
         this.transferredBytes = 0;
         this.speedSamples = [];
         this.chunkSize = 64 * 1024;
-        this.paused = false;
-        this.serverIndex = 0;
         this.initTimeout = null;
         this.vanishOnReceive = true;
         this._encKey = null;
@@ -309,8 +284,6 @@ class BeamApp {
                         { urls: 'stun:stun.l.google.com:19302' },
                         { urls: 'stun:stun1.l.google.com:19302' },
                         { urls: 'stun:stun2.l.google.com:19302' },
-                        { urls: 'stun:stun3.l.google.com:19302' },
-                        { urls: 'stun:stun4.l.google.com:19302' },
                         { urls: 'stun:stun.cloudflare.com:3478' },
                     ],
                     sdpSemantics: 'unified-plan'
@@ -340,11 +313,9 @@ class BeamApp {
         const el = document.getElementById('debug-log');
         const line = document.createElement('div');
         line.className = 'debug-line' + (type ? ' ' + type : '');
-        const ts = new Date().toLocaleTimeString();
-        line.textContent = `[${ts}] ${msg}`;
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
         el.appendChild(line);
         el.scrollTop = el.scrollHeight;
-        console.log(`[BEAM] ${msg}`);
     }
 
     toggleDebug() {
@@ -352,20 +323,19 @@ class BeamApp {
         s.style.display = s.style.display === 'none' ? 'block' : 'none';
     }
 
-    async init() {
+    init() {
         this.log('Starting BEAM v3...');
         this.setupDropZone();
-        this.tryConnectWithTimeout(0);
+        this.connectToServer(0);
     }
 
-    tryConnectWithTimeout(serverIdx) {
+    connectToServer(idx) {
         if (this.peer) { try { this.peer.destroy(); } catch(e){} this.peer = null; }
         if (this.initTimeout) { clearTimeout(this.initTimeout); this.initTimeout = null; }
 
-        if (serverIdx >= this.serverConfigs.length) {
-            this.log('ALL SERVERS FAILED', 'err');
-            this.setStatus('offline', 'ALL SERVERS OFFLINE');
-            this.toast('Cannot reach signaling servers. Check your internet connection.', 'error');
+        if (idx >= this.serverConfigs.length) {
+            this.setStatus('offline', 'SERVERS OFFLINE');
+            this.toast('Cannot reach servers. Check internet.', 'error');
             this.updateAction('RETRY', false);
             document.getElementById('action-btn').onclick = () => {
                 this.setStatus('connecting', 'RETRYING...');
@@ -374,109 +344,117 @@ class BeamApp {
             return;
         }
 
-        const config = this.serverConfigs[serverIdx];
-        this.serverIndex = serverIdx;
-        const serverName = config.host || 'default';
-        this.log(`Trying server ${serverIdx + 1}/${this.serverConfigs.length}: ${serverName}`, 'warn');
-        this.setStatus('connecting', `CONNECTING [${serverIdx + 1}/${this.serverConfigs.length}]...`);
+        const cfg = this.serverConfigs[idx];
+        this.setStatus('connecting', `CONNECTING [${idx + 1}/${this.serverConfigs.length}]...`);
+        this.log(`Server ${idx + 1}: ${cfg.host || 'default'}`, 'warn');
 
         try {
-            if (config.host) {
-                this.peer = new Peer({
-                    host: config.host, port: config.port,
-                    path: config.path, secure: config.secure,
-                    config: config.config, debug: 1
-                });
-            } else {
-                this.peer = new Peer({ config: config.config, debug: 1 });
-            }
+            this.peer = cfg.host
+                ? new Peer({ host: cfg.host, port: cfg.port, path: cfg.path, secure: cfg.secure, config: cfg.config, debug: 1 })
+                : new Peer({ config: cfg.config, debug: 1 });
         } catch(e) {
-            this.log(`Peer creation failed: ${e.message}`, 'err');
-            this.tryConnectWithTimeout(serverIdx + 1);
+            this.log(`Create failed: ${e.message}`, 'err');
+            this.connectToServer(idx + 1);
             return;
         }
 
         this.initTimeout = setTimeout(() => {
-            this.log(`Server ${serverName} timed out after 10s`, 'err');
-            this.tryConnectWithTimeout(serverIdx + 1);
+            this.log('Server timeout', 'err');
+            this.connectToServer(idx + 1);
         }, 10000);
 
         this.peer.on('open', (id) => {
-            clearTimeout(this.initTimeout); this.initTimeout = null;
-            this.onPeerOpen(id);
+            clearTimeout(this.initTimeout);
+            this.initTimeout = null;
+            this.log(`Connected! My ID: ${id}`, 'ok');
+            this.setStatus('online', `NODE: ${id.substring(0, 8)}`);
+            this.toast('Ready', 'success');
+
+            // If receiver opened via ?p= link, connect now
+            const targetId = new URLSearchParams(window.location.search).get('p');
+            if (targetId) {
+                this.log(`Auto-connecting to: ${targetId}`);
+                this.setStatus('connecting', 'CONNECTING TO PEER...');
+                this.connectToPeer(targetId);
+            }
+        });
+
+        this.peer.on('connection', (c) => {
+            this.log(`Incoming data connection: ${c.peer}`, 'ok');
+            this.bindConnection(c);
         });
 
         this.peer.on('error', (err) => {
             this.log(`Peer error: ${err.type}`, 'err');
             if (['server-error', 'socket-error', 'socket-closed'].includes(err.type)) {
-                clearTimeout(this.initTimeout); this.initTimeout = null;
-                this.tryConnectWithTimeout(serverIdx + 1);
+                clearTimeout(this.initTimeout);
+                this.initTimeout = null;
+                this.connectToServer(idx + 1);
             } else if (err.type === 'peer-unavailable') {
-                this.toast('Peer not found. The link may have expired.', 'error');
+                this.toast('Peer not found or offline', 'error');
                 this.setStatus('offline', 'PEER NOT FOUND');
-            } else if (err.type === 'network' || err.type === 'disconnected') {
-                this.toast('Network error. Reconnecting...', 'error');
-                this.setStatus('connecting', 'RECONNECTING...');
-            } else {
-                this.toast(`Error: ${err.type}`, 'error');
-                this.setStatus('offline', 'ERROR');
             }
         });
 
         this.peer.on('disconnected', () => {
-            this.log('Disconnected from server', 'warn');
+            this.log('Disconnected', 'warn');
             this.setStatus('connecting', 'RECONNECTING...');
             try { this.peer.reconnect(); } catch(e){}
         });
-
-        this.peer.on('connection', (c) => this.onIncomingConnection(c));
     }
 
-    // ─── Peer Lifecycle ──────────────────────────────────────────
-    onPeerOpen(id) {
-        this.log(`Connected! Peer ID: ${id}`, 'ok');
-        this.setStatus('online', `NODE: ${id.substring(0, 8)}`);
-        this.toast('Signaling server connected', 'success');
-
-        // Check if receiving via link
-        const urlId = new URLSearchParams(window.location.search).get('p');
-        if (urlId) {
-            this.log(`Connecting to peer: ${urlId}`);
-            this.initReceiver(urlId);
-        }
+    tryConnectWithTimeout(idx) {
+        this.connectToServer(idx);
     }
 
-    onIncomingConnection(c) {
-        this.log(`Incoming connection from: ${c.peer}`, 'ok');
+    // ─── Connection ──────────────────────────────────────────────
+    connectToPeer(peerId) {
+        this.log(`Connecting to peer: ${peerId}`);
+        const c = this.peer.connect(peerId, { reliable: true });
+        this.bindConnection(c);
+    }
+
+    bindConnection(c) {
         this.conn = c;
-        this.setupConnection();
-    }
+        this.log(`Binding connection to ${c.peer}`);
 
-    setupConnection() {
-        this.conn.on('open', () => {
-            this.log('Data channel open!', 'ok');
+        // Handle open
+        const onOpen = () => {
+            if (this.connected) return;
+            this.connected = true;
+            this.log('Data channel OPEN!', 'ok');
             this.setStatus('online', 'PEER CONNECTED');
-            this.toast('Peer connected!', 'success');
-            if (this.isSender) this.sendFileManifest();
-        });
-        this.conn.on('data', (data) => this.onData(data));
-        this.conn.on('close', () => {
-            this.log('Peer disconnected', 'warn');
+            this.toast('Connected!', 'success');
+
+            // If sender with files ready, send manifest
+            if (this.isSender && this.files.length > 0) {
+                this.sendFileManifest();
+            }
+        };
+
+        // If already open, fire immediately
+        if (c.open) {
+            onOpen();
+        } else {
+            c.on('open', onOpen);
+        }
+
+        // Handle data
+        c.on('data', (data) => this.onData(data));
+
+        // Handle close
+        c.on('close', () => {
+            this.log('Connection closed');
+            this.connected = false;
             this.toast('Peer disconnected', 'info');
-            this.setStatus('online', 'PEER DISCONNECTED');
+            this.setStatus('online', 'DISCONNECTED');
         });
-        this.conn.on('error', (err) => {
+
+        // Handle error
+        c.on('error', (err) => {
             this.log(`Connection error: ${err}`, 'err');
             this.toast('Connection error', 'error');
         });
-    }
-
-    // ─── Receiver ────────────────────────────────────────────────
-    initReceiver(peerId) {
-        this.setStatus('connecting', 'CONNECTING TO PEER...');
-        this.toast('Connecting...', 'info');
-        this.conn = this.peer.connect(peerId, { reliable: true });
-        this.setupConnection();
     }
 
     // ─── Sender ──────────────────────────────────────────────────
@@ -489,21 +467,15 @@ class BeamApp {
         if (!this.files.length) return;
         this.isSender = true;
 
+        // Show file list
         const fileListEl = document.getElementById('file-list');
         fileListEl.innerHTML = '';
-
         this.files.forEach((f, i) => {
             const item = document.createElement('div');
             item.className = 'file-item';
-            item.id = `file-${i}`;
-
             const isImage = f.type.startsWith('image/');
             let iconHtml = `<div class="file-icon">${this.getFileEmoji(f.name)}</div>`;
-            if (isImage) {
-                const url = URL.createObjectURL(f);
-                iconHtml = `<img class="file-preview" src="${url}" alt="">`;
-            }
-
+            if (isImage) iconHtml = `<img class="file-preview" src="${URL.createObjectURL(f)}" alt="">`;
             item.innerHTML = `
                 ${iconHtml}
                 <div class="file-info">
@@ -516,9 +488,8 @@ class BeamApp {
         });
 
         document.getElementById('drop-zone').style.display = 'none';
-        this.updateAction('AWAITING RECEIVER...', true);
 
-        // Generate QR code and link after files selected
+        // Generate QR and link
         if (this.peer && this.peer.id) {
             const shareUrl = `${window.location.origin}${window.location.pathname}?p=${this.peer.id}`;
             document.getElementById('link-section').style.display = 'block';
@@ -528,18 +499,31 @@ class BeamApp {
             new QRCode(qrEl, { text: shareUrl, width: 160, height: 160 });
             this.log(`Share link: ${shareUrl}`, 'ok');
         }
+
+        // If already connected, send manifest now
+        if (this.connected && this.conn) {
+            this.sendFileManifest();
+        } else {
+            this.updateAction('AWAITING RECEIVER...', true);
+        }
     }
 
-    removeFile(index) {
-        this.files.splice(index, 1);
-        if (this.files.length === 0) { this.resetUI(); return; }
+    removeFile(i) {
+        this.files.splice(i, 1);
+        if (!this.files.length) { this.resetUI(); return; }
         this.handleFiles(this.files);
     }
 
     sendFileManifest() {
         this.log('Sending file manifest...');
         const manifest = this.files.map(f => ({ name: f.name, size: f.size, type: f.type }));
-        this.conn.send({ type: 'manifest', files: manifest, key: this.sessionKey });
+        try {
+            this.conn.send({ type: 'manifest', files: manifest, key: this.sessionKey });
+            this.updateAction('AWAITING RECEIVER...', true);
+            this.log('Manifest sent', 'ok');
+        } catch(e) {
+            this.log(`Manifest send failed: ${e}`, 'err');
+        }
     }
 
     async startSending() {
@@ -547,92 +531,92 @@ class BeamApp {
         this.totalBytes = this.files.reduce((s, f) => s + f.size, 0);
         this.transferredBytes = 0;
         this.showProgress();
-        this.log(`Starting transfer: ${this.files.length} files, ${this.formatSize(this.totalBytes)}`);
+        this.log(`Sending ${this.files.length} files (${this.formatSize(this.totalBytes)})`);
 
         for (let i = 0; i < this.files.length; i++) {
             const file = this.files[i];
             this.conn.send({ type: 'file-start', name: file.name, size: file.size, index: i });
-            this.log(`Sending: ${file.name}`);
+            this.log(`Sending file ${i + 1}: ${file.name}`);
 
             let offset = 0;
             while (offset < file.size) {
-                while (this.paused) await this.sleep(100);
                 const end = Math.min(offset + this.chunkSize, file.size);
                 const chunk = await file.slice(offset, end).arrayBuffer();
                 const encrypted = await this.encryptChunk(chunk);
                 this.conn.send({ type: 'chunk', data: encrypted, index: i });
                 offset += (end - offset);
-                this.transferredBytes += (encrypted.byteLength || encrypted.size || (end - offset));
+                this.transferredBytes += (encrypted.byteLength || (end - offset));
                 this.updateProgress();
             }
             this.conn.send({ type: 'file-end', index: i });
-            this.log(`Sent: ${file.name}`, 'ok');
+            this.log(`Done: ${file.name}`, 'ok');
         }
         this.conn.send({ type: 'done' });
         this.log('All files sent!', 'ok');
-        this.onTransferComplete();
+        this.onTransferDone();
     }
 
     // ─── Data Handler ────────────────────────────────────────────
     onData(data) {
         switch (data.type) {
             case 'manifest':
-                this.log(`Manifest: ${data.files.length} files`);
-                this.sessionKey = data.key;
-                this._decKey = null;
-                this.incomingFiles = data.files;
-                this.totalSize = data.files.reduce((s, f) => s + f.size, 0);
-                this.receivedBytes = 0;
-                this.currentChunks = [];
-                this.fileResults = [];
-                this.isReceiver = true;
-
-                const listEl = document.getElementById('file-list');
-                listEl.innerHTML = '';
-                data.files.forEach((f, i) => {
-                    const item = document.createElement('div');
-                    item.className = 'file-item';
-                    item.id = `recv-file-${i}`;
-                    item.innerHTML = `
-                        <div class="file-icon">${this.getFileEmoji(f.name)}</div>
-                        <div class="file-info">
-                            <div class="file-name">${this.escapeHtml(f.name)}</div>
-                            <div class="file-meta">${this.formatSize(f.size)} &middot; ${f.type || 'unknown'}</div>
-                        </div>
-                    `;
-                    listEl.appendChild(item);
-                });
-
-                document.getElementById('drop-zone').style.display = 'none';
-                this.showProgress();
-                this.startTime = Date.now();
-                this.conn.send({ type: 'ready' });
+                this.onManifest(data);
                 break;
-
             case 'ready':
+                this.log('Receiver ready, starting send');
                 this.startSending();
                 break;
-
             case 'file-start':
                 this.currentChunks = [];
                 this.currentFileName = data.name;
                 this.currentFileSize = data.size;
-                this.currentFileIndex = data.index;
                 this.log(`Receiving: ${data.name} (${this.formatSize(data.size)})`);
                 break;
-
             case 'chunk':
                 this.onChunk(data);
                 break;
-
             case 'file-end':
                 this.onFileEnd(data);
                 break;
-
             case 'done':
-                this.onTransferComplete();
+                this.onTransferDone();
                 break;
         }
+    }
+
+    onManifest(data) {
+        this.log(`Manifest received: ${data.files.length} files`);
+        this.sessionKey = data.key;
+        this._decKey = null;
+        this.totalSize = data.files.reduce((s, f) => s + f.size, 0);
+        this.receivedBytes = 0;
+        this.currentChunks = [];
+        this.fileResults = [];
+        this.isReceiver = true;
+
+        // Show incoming file list
+        const listEl = document.getElementById('file-list');
+        listEl.innerHTML = '';
+        data.files.forEach(f => {
+            const item = document.createElement('div');
+            item.className = 'file-item';
+            item.innerHTML = `
+                <div class="file-icon">${this.getFileEmoji(f.name)}</div>
+                <div class="file-info">
+                    <div class="file-name">${this.escapeHtml(f.name)}</div>
+                    <div class="file-meta">${this.formatSize(f.size)} &middot; ${f.type || 'unknown'}</div>
+                </div>
+            `;
+            listEl.appendChild(item);
+        });
+
+        document.getElementById('drop-zone').style.display = 'none';
+        this.showProgress();
+        this.startTime = Date.now();
+
+        // Tell sender we're ready
+        this.conn.send({ type: 'ready' });
+        this.log('Sent ready signal', 'ok');
     }
 
     async onChunk(data) {
@@ -640,74 +624,95 @@ class BeamApp {
             const chunk = await this.decryptChunk(data.data);
             this.currentChunks.push(chunk);
         } catch(e) {
+            this.log('Decryption failed', 'err');
             this.currentChunks.push(data.data);
-            this.log('Decryption error', 'err');
         }
-        this.receivedBytes += (data.data.byteLength || data.data.size || 0);
+        this.receivedBytes += (data.data.byteLength || 0);
         this.updateProgress();
     }
 
     onFileEnd(data) {
         const blob = new Blob(this.currentChunks);
+        this.fileResults = this.fileResults || [];
         this.fileResults.push({ name: this.currentFileName, blob });
         this.addToHistory(this.currentFileName, this.currentFileSize, 'done');
         this.log(`Received: ${this.currentFileName}`, 'ok');
 
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = this.currentFileName;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        // Download the file
+        try {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = this.currentFileName;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+        } catch(e) {
+            this.log(`Download error: ${e}`, 'err');
+        }
+        this.currentChunks = [];
     }
 
-    // ─── Transfer Complete ───────────────────────────────────────
-    onTransferComplete() {
+    onTransferDone() {
         document.getElementById('progress-label').innerText = 'COMPLETE';
         document.getElementById('progress-fill').style.background = 'var(--success)';
         this.toast('Transfer complete!', 'success');
         this.setStatus('online', 'TRANSFER COMPLETE');
-        this.updateAction('DONE', true);
         this.log('Transfer complete!', 'ok');
 
-        if (this.isReceiver && this.vanishOnReceive) {
-            this.log('Vanish mode: cleaning up in 3 seconds...');
-            this.toast('Files received. Session will vanish in 3s...', 'success');
-            setTimeout(() => this.vanishSession(), 3000);
-        } else if (this.isSender) {
-            setTimeout(() => {
-                this.updateAction('SEND AGAIN', false);
-                document.getElementById('action-btn').onclick = () => this.resetUI();
-            }, 2000);
+        if (this.isReceiver) {
+            // Receiver: vanish after 3s
+            this.updateAction('DONE', true);
+            if (this.vanishOnReceive) {
+                this.toast('Session vanishing in 3s...', 'info');
+                setTimeout(() => this.vanishSession(), 3000);
+            }
+        } else {
+            // Sender: ask send more or clear
+            this.updateAction('SEND AGAIN', false);
+            document.getElementById('action-btn').onclick = () => this.sendAgain();
         }
     }
 
-    vanishSession() {
-        this.log('VANISH: Destroying session');
-
-        if (this.conn) { try { this.conn.close(); } catch(e){} this.conn = null; }
-        if (this.peer) { try { this.peer.destroy(); } catch(e){} this.peer = null; }
-
+    sendAgain() {
         this.files = [];
-        this.fileResults = [];
-        this.incomingFiles = [];
-        this.currentChunks = [];
         this.isSender = false;
-        this.isReceiver = false;
-        this._encKey = null; this._encSalt = null; this._decKey = null;
+        this._encKey = null;
+        this._encSalt = null;
+        this._decKey = null;
         this.sessionKey = this.generateKey();
-
-        window.history.replaceState({}, document.title, window.location.pathname);
-
-        this.resetUI();
-        this.toast('Session vanished. Ready for next transfer.', 'info');
-        this.log('Session cleaned up.', 'ok');
-
-        this.serverIndex = 0;
-        this.setStatus('connecting', 'REINITIALIZING...');
-        setTimeout(() => this.tryConnectWithTimeout(0), 1000);
+        document.getElementById('file-list').innerHTML = '';
+        document.getElementById('link-section').style.display = 'none';
+        document.getElementById('progress-section').style.display = 'none';
+        document.getElementById('progress-fill').style.width = '0%';
+        document.getElementById('progress-fill').style.background = 'var(--fg)';
+        document.getElementById('progress-label').innerText = 'TRANSFERRING...';
+        document.getElementById('drop-zone').style.display = 'block';
+        this.updateAction('SELECT FILES', false);
+        this.toast('Select files to send', 'info');
     }
 
-    // ─── AES-256-GCM Encryption ─────────────────────────────────
+    vanishSession() {
+        this.log('VANISH: Cleaning session');
+        if (this.conn) { try { this.conn.close(); } catch(e){} this.conn = null; }
+        if (this.peer) { try { this.peer.destroy(); } catch(e){} this.peer = null; }
+        this.files = [];
+        this.fileResults = [];
+        this.isSender = false;
+        this.isReceiver = false;
+        this.connected = false;
+        this._encKey = null; this._encSalt = null; this._decKey = null;
+        this.sessionKey = this.generateKey();
+        window.history.replaceState({}, document.title, window.location.pathname);
+        this.resetUI();
+        this.toast('Session vanished', 'info');
+        this.setStatus('connecting', 'REINITIALIZING...');
+        setTimeout(() => this.connectToServer(0), 1000);
+    }
+
+    // ─── AES-256-GCM ────────────────────────────────────────────
     async deriveKey(pw, salt) {
         const enc = new TextEncoder();
         const km = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
@@ -739,7 +744,7 @@ class BeamApp {
         return crypto.subtle.decrypt({ name: 'AES-GCM', iv: data.slice(16, 28) }, this._decKey, data.slice(28));
     }
 
-    // ─── Progress & Stats ────────────────────────────────────────
+    // ─── Progress ────────────────────────────────────────────────
     showProgress() {
         document.getElementById('progress-section').style.display = 'block';
         const total = this.totalBytes || this.totalSize || 0;
@@ -749,26 +754,21 @@ class BeamApp {
     updateProgress() {
         const total = this.totalBytes || this.totalSize || 0;
         const current = this.transferredBytes || this.receivedBytes || 0;
-
         if (!isFinite(total) || total <= 0 || !isFinite(current)) return;
-
         const pct = Math.min(Math.floor((current / total) * 100), 100);
-
         document.getElementById('progress-fill').style.width = pct + '%';
-        document.getElementById('progress-pct').innerText = (isFinite(pct) ? pct : 0) + '%';
-
+        document.getElementById('progress-pct').innerText = pct + '%';
         const elapsed = (Date.now() - this.startTime) / 1000;
         if (elapsed > 0.1 && current > 0) {
-            const speed = (current / (1024 * 1024)) / elapsed;
-            if (isFinite(speed)) {
-                this.speedSamples.push(speed);
+            const spd = (current / (1024 * 1024)) / elapsed;
+            if (isFinite(spd)) {
+                this.speedSamples.push(spd);
                 if (this.speedSamples.length > 10) this.speedSamples.shift();
-                const avgSpeed = this.speedSamples.reduce((a, b) => a + b, 0) / this.speedSamples.length;
-                document.getElementById('stat-speed').innerText = avgSpeed.toFixed(1) + ' MB/s';
+                document.getElementById('stat-speed').innerText =
+                    (this.speedSamples.reduce((a, b) => a + b, 0) / this.speedSamples.length).toFixed(1) + ' MB/s';
             }
-
-            const remaining = (total - current) / (current / elapsed);
-            document.getElementById('stat-eta').innerText = isFinite(remaining) && remaining > 0 ? this.formatTime(remaining) : '--';
+            const rem = (total - current) / (current / elapsed);
+            document.getElementById('stat-eta').innerText = isFinite(rem) && rem > 0 ? this.formatTime(rem) : '--';
         }
     }
 
@@ -780,34 +780,27 @@ class BeamApp {
     }
 
     renderHistory() {
-        const section = document.getElementById('history-section');
-        const list = document.getElementById('history-list');
-        if (!this.history.length) { section.style.display = 'none'; return; }
-        section.style.display = 'block';
-        list.innerHTML = '';
+        const s = document.getElementById('history-section'), l = document.getElementById('history-list');
+        if (!this.history.length) { s.style.display = 'none'; return; }
+        s.style.display = 'block'; l.innerHTML = '';
         this.history.forEach(h => {
-            const item = document.createElement('div');
-            item.className = 'history-item';
-            item.innerHTML = `
-                <span class="history-name">${this.escapeHtml(h.name)}</span>
-                <span class="history-size">${this.formatSize(h.size)}</span>
-                <span class="history-status ${h.status}">${h.status === 'done' ? '&#10003;' : '&#8230;'}</span>
-            `;
-            list.appendChild(item);
+            const d = document.createElement('div');
+            d.className = 'history-item';
+            d.innerHTML = `<span class="history-name">${this.escapeHtml(h.name)}</span><span class="history-size">${this.formatSize(h.size)}</span><span class="history-status ${h.status}">&#10003;</span>`;
+            l.appendChild(d);
         });
     }
 
     toggleHistory() {
-        const section = document.getElementById('history-section');
-        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        const s = document.getElementById('history-section');
+        s.style.display = s.style.display === 'none' ? 'block' : 'none';
     }
 
-    // ─── UI Helpers ──────────────────────────────────────────────
+    // ─── UI ──────────────────────────────────────────────────────
     setStatus(state, text) {
         const dot = document.getElementById('status-dot');
         dot.className = 'status-dot' + (state === 'online' ? ' online' : state === 'connecting' ? ' connecting' : '');
         document.getElementById('status-text').innerText = text;
-
         const bars = document.querySelectorAll('.signal-bar');
         const quality = state === 'online' ? 4 : state === 'connecting' ? 2 : 0;
         bars.forEach((bar, i) => bar.classList.toggle('active', i < quality));
@@ -823,20 +816,10 @@ class BeamApp {
     setupDropZone() {
         const zone = document.getElementById('drop-zone');
         const input = document.getElementById('file-input');
-
-        ['dragenter', 'dragover'].forEach(e => {
-            zone.addEventListener(e, (ev) => { ev.preventDefault(); zone.classList.add('dragover'); });
-        });
-        ['dragleave', 'drop'].forEach(e => {
-            zone.addEventListener(e, (ev) => { ev.preventDefault(); zone.classList.remove('dragover'); });
-        });
-        zone.addEventListener('drop', (ev) => {
-            const files = ev.dataTransfer.files;
-            if (files.length) this.handleFiles(files);
-        });
-        input.addEventListener('change', (e) => {
-            if (e.target.files.length) this.handleFiles(e.target.files);
-        });
+        ['dragenter', 'dragover'].forEach(e => zone.addEventListener(e, ev => { ev.preventDefault(); zone.classList.add('dragover'); }));
+        ['dragleave', 'drop'].forEach(e => zone.addEventListener(e, ev => { ev.preventDefault(); zone.classList.remove('dragover'); }));
+        zone.addEventListener('drop', ev => { if (ev.dataTransfer.files.length) this.handleFiles(ev.dataTransfer.files); });
+        input.addEventListener('change', e => { if (e.target.files.length) this.handleFiles(e.target.files); });
     }
 
     resetUI() {
@@ -846,6 +829,7 @@ class BeamApp {
         this.sessionKey = this.generateKey();
         document.getElementById('drop-zone').style.display = 'block';
         document.getElementById('file-list').innerHTML = '';
+        document.getElementById('link-section').style.display = 'none';
         document.getElementById('progress-section').style.display = 'none';
         document.getElementById('progress-fill').style.width = '0%';
         document.getElementById('progress-fill').style.background = 'var(--fg)';
@@ -857,18 +841,15 @@ class BeamApp {
         const box = document.getElementById('link-box');
         const url = box.innerText;
         navigator.clipboard.writeText(url).then(() => {
-            this.toast('Link copied to clipboard!', 'success');
+            this.toast('Link copied!', 'success');
             box.innerText = 'COPIED';
             setTimeout(() => { box.innerText = url; }, 1500);
-        }).catch(() => {
-            this.toast('Failed to copy', 'error');
-        });
+        }).catch(() => this.toast('Copy failed', 'error'));
     }
 
     toggleTheme() {
         const html = document.documentElement;
-        const current = html.getAttribute('data-theme');
-        html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+        html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     }
 
     toast(msg, type = 'info') {
@@ -877,10 +858,7 @@ class BeamApp {
         el.className = `toast ${type}`;
         el.innerText = msg;
         container.appendChild(el);
-        setTimeout(() => {
-            el.style.animation = 'toastOut 0.3s ease forwards';
-            setTimeout(() => el.remove(), 300);
-        }, 3000);
+        setTimeout(() => { el.style.animation = 'toastOut 0.3s ease forwards'; setTimeout(() => el.remove(), 300); }, 3000);
     }
 
     // ─── Utilities ───────────────────────────────────────────────
@@ -902,9 +880,9 @@ class BeamApp {
         const map = {
             pdf: '\uD83D\uDCC4', doc: '\uD83D\uDCDD', docx: '\uD83D\uDCDD', txt: '\uD83D\uDCC3',
             jpg: '\uD83D\uDDBC', jpeg: '\uD83D\uDDBC', png: '\uD83D\uDDBC', gif: '\uD83D\uDDBC', svg: '\uD83D\uDDBC', webp: '\uD83D\uDDBC',
-            mp3: '\uD83C\uDFB5', wav: '\uD83C\uDFB5', flac: '\uD83C\uDFB5', ogg: '\uD83C\uDFB5',
+            mp3: '\uD83C\uDFB5', wav: '\uD83C\uDFB5', flac: '\uD83C\uDFB5',
             mp4: '\uD83C\uDFAC', avi: '\uD83C\uDFAC', mkv: '\uD83C\uDFAC', mov: '\uD83C\uDFAC',
-            zip: '\uD83D\uDCE6', rar: '\uD83D\uDCE6', '7z': '\uD83D\uDCE6', tar: '\uD83D\uDCE6', gz: '\uD83D\uDCE6',
+            zip: '\uD83D\uDCE6', rar: '\uD83D\uDCE6', '7z': '\uD83D\uDCE6',
             js: '\u2699', ts: '\u2699', py: '\u2699', html: '\u2699', css: '\u2699',
             xls: '\uD83D\uDCCA', xlsx: '\uD83D\uDCCA', csv: '\uD83D\uDCCA',
         };
