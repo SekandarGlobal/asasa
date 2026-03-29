@@ -3,205 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIQUID P2P | STEALTH</title>
+    <title>STEALTH | INDUSTRIAL</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --bg: #000; --fg: #fff; --border: #222; }
-        * { box-sizing: border-box; font-family: 'SF Mono', monospace; cursor: crosshair; }
-        body { background: var(--bg); color: var(--fg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        
-        .vault-card { 
-            border: 1px solid var(--border); padding: 40px; width: 100%; max-width: 450px;
-            background: #050505; position: relative;
-        }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .logo { font-weight: 900; letter-spacing: -2px; font-size: 22px; }
-        .status-light { font-size: 9px; color: #555; text-transform: uppercase; }
-
-        /* QR Section */
-        #link-section { margin-top: 20px; display: none; text-align: center; }
-        #qrcode { background: white; padding: 20px; border-radius: 2px; margin: 0 auto 20px; width: 220px; height: 220px; display: flex; justify-content: center; align-items: center; }
-        #qrcode img { width: 180px !important; height: 180px !important; }
-        .url-box { background: #111; border: 1px solid var(--border); padding: 12px; font-size: 10px; color: #666; word-break: break-all; cursor: pointer; }
-
-        /* File UI */
-        .file-zone { border: 1px dashed #333; padding: 40px 20px; margin-bottom: 20px; text-align: center; }
-        .file-zone:hover { border-color: #fff; background: #0a0a0a; }
-        .meta { font-size: 11px; text-align: left; display: none; border-top: 1px solid #222; padding-top: 10px; margin-top: 15px; }
-
-        /* Vitals */
-        .vitals { margin-top: 20px; display: none; }
-        .v-row { display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-bottom: 8px; }
-        .bar-track { height: 1px; background: #111; width: 100%; }
-        .bar-fill { height: 1px; background: #fff; width: 0%; box-shadow: 0 0 10px #fff; transition: width 0.1s; }
-
-        .btn { background: #fff; color: #000; padding: 18px; width: 100%; border: none; font-weight: 900; font-size: 12px; letter-spacing: 2px; cursor: pointer; }
+        * { box-sizing: border-box; font-family: 'SF Mono', monospace; }
+        body { background: var(--bg); color: var(--fg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .vault { border: 1px solid var(--border); padding: 30px; width: 95%; max-width: 450px; background: #050505; }
+        .header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .log { font-size: 8px; color: #444; height: 40px; overflow-y: auto; text-transform: uppercase; margin-bottom: 10px; border-left: 1px solid #222; padding-left: 10px; }
+        #qrcode { background: white; padding: 15px; margin: 20px auto; width: 230px; height: 230px; display: none; justify-content: center; align-items: center; }
+        #qrcode img { width: 200px !important; height: 200px !important; }
+        .btn { background: #fff; color: #000; padding: 20px; width: 100%; border: none; font-weight: 900; cursor: pointer; letter-spacing: 2px; }
         .btn:disabled { background: #111; color: #333; }
-        
-        .shredding { animation: shred 0.5s forwards; }
-        @keyframes shred { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.95) translateY(20px); filter: blur(10px); } }
+        .vitals { margin-top: 20px; display: none; }
+        .bar { height: 1px; background: #111; width: 100%; margin-top: 10px; position: relative; }
+        .fill { height: 1px; background: #fff; width: 0%; box-shadow: 0 0 10px #fff; transition: width 0.1s; }
+        .meta-text { font-size: 10px; color: #666; margin-top: 10px; word-break: break-all; }
     </style>
 </head>
 <body>
 
-<div class="vault-card" id="card">
+<div class="vault" id="main-vault">
     <div class="header">
-        <div class="logo">STEALTH.P2P</div>
-        <div class="status-light" id="status">INITIATING...</div>
+        <b>STEALTH.v3</b>
+        <span id="node-id">OFFLINE</span>
     </div>
+    
+    <div class="log" id="console">SYSTEM READY...</div>
 
-    <div class="file-zone" id="drop-zone">
+    <div id="setup-view">
         <input type="file" id="file-input" style="display:none">
-        <div id="prompt">SECURE CHANNEL READY: SELECT FILE</div>
-        <div class="meta" id="meta-ui">
-            <div>FILE: <b id="m-name"></b></div>
-            <div>SIZE: <b id="m-size"></b></div>
-        </div>
-    </div>
-
-    <button class="btn" id="main-btn" onclick="document.getElementById('file-input').click()">START BEAM</button>
-
-    <div id="link-section">
+        <button class="btn" id="init-btn" onclick="document.getElementById('file-input').click()">SELECT SOURCE</button>
         <div id="qrcode"></div>
-        <div class="url-box" id="url-box" onclick="copyUrl()">GENERATING ENCRYPTED LINK...</div>
+        <div id="url-display" class="meta-text" style="text-align:center; cursor:pointer;" onclick="copyUrl()"></div>
     </div>
 
-    <div class="vitals" id="vitals-ui">
-        <div class="v-row"><span id="v-speed">0.00 MB/S</span><span id="v-pct">0%</span></div>
-        <div class="bar-track"><div class="bar-fill" id="bar-fill"></div></div>
+    <div class="vitals" id="vitals">
+        <div style="display:flex; justify-content: space-between; font-size: 10px;">
+            <span id="v-speed">0 MB/S</span>
+            <span id="v-pct">0%</span>
+        </div>
+        <div class="bar"><div class="fill" id="fill"></div></div>
+        <div class="meta-text" id="m-name">FILE: --</div>
     </div>
 </div>
 
 <script>
-    const peer = new Peer();
-    let activeConn;
-    let startTime;
-    let selectedFile;
+    // Industrial STUN config to bypass firewalls (Google's Public Servers)
+    const peerConfig = {
+        config: {
+            'iceServers': [
+                { url: 'stun:stun.l.google.com:19302' },
+                { url: 'stun:stun1.l.google.com:19302' }
+            ]
+        }
+    };
 
-    const status = document.getElementById('status');
-    const mainBtn = document.getElementById('main-btn');
+    const peer = new Peer(peerConfig);
+    let conn;
+    let selectedFile;
+    let startTime;
+
+    function log(msg) {
+        const c = document.getElementById('console');
+        c.innerHTML = msg + "<br>" + c.innerHTML;
+    }
 
     peer.on('open', (id) => {
-        status.innerText = "NODE: " + id.substring(0,8);
-        const receiverId = new URLSearchParams(window.location.search).get('p');
-        if (receiverId) connectToSender(receiverId);
+        document.getElementById('node-id').innerText = "ID: " + id.substring(0,6);
+        log("NODE ACTIVE: " + id);
+        
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('p')) startReceiver(params.get('p'));
     });
 
-    // SENDER LOGIC
+    peer.on('error', (err) => log("PEER ERROR: " + err.type));
+
+    // SENDER
     document.getElementById('file-input').onchange = (e) => {
         selectedFile = e.target.files[0];
         if (!selectedFile) return;
 
-        document.getElementById('prompt').style.display = 'none';
-        document.getElementById('meta-ui').style.display = 'block';
-        document.getElementById('m-name').innerText = selectedFile.name;
-        document.getElementById('m-size').innerText = (selectedFile.size / 1048576).toFixed(2) + " MB";
-
-        const shareUrl = `${window.location.origin}${window.location.pathname}?p=${peer.id}`;
-        document.getElementById('link-section').style.display = 'block';
-        document.getElementById('url-box').innerText = shareUrl;
+        const url = window.location.origin + window.location.pathname + "?p=" + peer.id;
+        document.getElementById('qrcode').style.display = 'flex';
+        document.getElementById('url-display').innerText = url;
+        new QRCode(document.getElementById('qrcode'), { text: url, width: 200, height: 200 });
         
-        document.getElementById('qrcode').innerHTML = "";
-        new QRCode(document.getElementById('qrcode'), { text: shareUrl, width: 180, height: 180 });
+        document.getElementById('init-btn').innerText = "AWAITING PEER...";
+        document.getElementById('init-btn').disabled = true;
+        log("SENDER MODE: READY FOR SCAN");
 
-        mainBtn.innerText = "WAITING FOR SCAN...";
-        mainBtn.disabled = true;
-
-        peer.on('connection', (conn) => {
-            activeConn = conn;
-            status.innerText = "PEER SYNCED";
-            
-            // Wait for Receiver to say "I AM READY"
-            activeConn.on('data', (data) => {
-                if (data.type === 'ready') {
-                    status.innerText = "BEAMING...";
-                    activeConn.send({ type: 'meta', name: selectedFile.name, size: selectedFile.size });
-                    streamFile(selectedFile);
-                }
-                if (data.type === 'done') finalize();
+        peer.on('connection', (c) => {
+            conn = c;
+            log("PEER CONNECTED");
+            conn.on('open', () => {
+                log("HANDSHAKE COMPLETE. BEAMING...");
+                conn.send({ type: 'meta', name: selectedFile.name, size: selectedFile.size });
+                streamFile(selectedFile);
             });
         });
     };
 
     async function streamFile(file) {
-        document.getElementById('vitals-ui').style.display = 'block';
+        document.getElementById('vitals').style.display = 'block';
+        document.getElementById('m-name').innerText = "BEAMING: " + file.name;
         startTime = Date.now();
-        const chunkSize = 128 * 1024; // 128KB
+        const chunkSize = 64 * 1024;
         let offset = 0;
 
         while (offset < file.size) {
             const chunk = await file.slice(offset, offset + chunkSize).arrayBuffer();
-            activeConn.send({ type: 'chunk', data: chunk });
+            conn.send({ type: 'chunk', data: chunk });
             offset += chunk.byteLength;
-            updateVitals(offset, file.size);
+            updateUI(offset, file.size);
         }
-        activeConn.send({ type: 'complete' });
+        conn.send({ type: 'done' });
+        log("UPLOAD FINISHED");
     }
 
-    // RECEIVER LOGIC
-    function connectToSender(targetId) {
-        mainBtn.disabled = true;
-        mainBtn.innerText = "LINKING...";
-        
-        activeConn = peer.connect(targetId);
+    // RECEIVER
+    function startReceiver(pid) {
+        log("RECEIVER MODE: LINKING TO " + pid);
+        document.getElementById('init-btn').innerText = "CONNECTING...";
+        document.getElementById('init-btn').disabled = true;
 
-        let receivedSize = 0;
-        let totalSize = 0;
-        let name = "";
+        conn = peer.connect(pid, { reliable: true });
+
         let chunks = [];
+        let received = 0;
+        let total = 0;
+        let name = "";
 
-        activeConn.on('open', () => {
-            // CRITICAL: Tell the sender we are ready to receive
-            activeConn.send({ type: 'ready' });
-            status.innerText = "HANDSHAKE OK";
-        });
-
-        activeConn.on('data', (data) => {
-            if (data.type === 'meta') {
-                totalSize = data.size; name = data.name;
-                document.getElementById('vitals-ui').style.display = 'block';
-                document.getElementById('meta-ui').style.display = 'block';
-                document.getElementById('m-name').innerText = name;
-                document.getElementById('m-size').innerText = (totalSize / 1048576).toFixed(2) + " MB";
-                document.getElementById('prompt').style.display = 'none';
+        conn.on('open', () => log("LINK ESTABLISHED"));
+        conn.on('data', (d) => {
+            if (d.type === 'meta') {
+                total = d.size; name = d.name;
+                document.getElementById('vitals').style.display = 'block';
+                document.getElementById('m-name').innerText = "RECEIVING: " + name;
                 startTime = Date.now();
             }
-            if (data.type === 'chunk') {
-                chunks.push(data.data);
-                receivedSize += data.data.byteLength;
-                updateVitals(receivedSize, totalSize);
+            if (d.type === 'chunk') {
+                chunks.push(d.data);
+                received += d.data.byteLength;
+                updateUI(received, total);
             }
-            if (data.type === 'complete') {
+            if (d.type === 'done') {
                 const blob = new Blob(chunks);
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
                 a.download = name; a.click();
-                activeConn.send({ type: 'done' });
-                finalize();
+                log("DOWNLOAD COMPLETE");
+                setTimeout(() => window.location.href = window.location.origin + window.location.pathname, 2000);
             }
         });
     }
 
-    function updateVitals(cur, tot) {
+    function updateUI(cur, tot) {
         const pct = Math.floor((cur / tot) * 100);
-        document.getElementById('bar-fill').style.width = pct + "%";
+        document.getElementById('fill').style.width = pct + "%";
         document.getElementById('v-pct').innerText = pct + "%";
         const speed = (cur / 1048576) / ((Date.now() - startTime) / 1000);
         document.getElementById('v-speed').innerText = speed.toFixed(2) + " MB/S";
     }
 
-    function finalize() {
-        status.innerText = "SHREDDING SESSION...";
-        document.getElementById('card').classList.add('shredding');
-        setTimeout(() => {
-            window.location.href = window.location.origin + window.location.pathname;
-        }, 1500);
-    }
-
     function copyUrl() {
-        navigator.clipboard.writeText(document.getElementById('url-box').innerText);
-        document.getElementById('url-box').innerText = "COPIED";
+        navigator.clipboard.writeText(document.getElementById('url-display').innerText);
+        log("URL COPIED");
     }
 </script>
 </body>
