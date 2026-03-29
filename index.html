@@ -3,251 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIQUID P2P | ULTRA</title>
+    <title>LIQUID P2P | TITANIUM</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --bg: #000; --fg: #fff; --border: #333; --accent: #fff; }
-        * { box-sizing: border-box; transition: all 0.2s ease-out; cursor: crosshair; }
+        :root { --bg: #000; --fg: #fff; --border: #222; }
+        * { box-sizing: border-box; font-family: 'Inter', 'SF Mono', monospace; }
         body { 
-            background: var(--bg); color: var(--fg); 
-            font-family: 'SF Mono', 'Fira Code', monospace;
-            display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;
+            background: var(--bg); color: var(--fg); margin: 0;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
         }
-        .vault-card { 
-            border: 1px solid var(--border); padding: 40px; width: 100%; max-width: 500px;
-            text-align: center; position: relative; background: #050505;
+        .app-container { 
+            width: 100%; max-width: 450px; padding: 40px; text-align: center;
+            border: 1px solid var(--border); background: #050505;
         }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .logo { font-weight: 900; letter-spacing: -2px; font-size: 24px; }
-        .node-status { font-size: 9px; color: #666; text-transform: uppercase; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 50px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .logo { font-weight: 900; letter-spacing: -1px; font-size: 20px; }
+        .os-tag { font-size: 9px; color: #555; text-transform: uppercase; border: 1px solid #333; padding: 2px 6px; border-radius: 4px; }
 
         /* QR & Link Area */
-        #link-section { margin-top: 20px; display: none; }
-        #qrcode { 
-            background: white; padding: 25px; border-radius: 4px; 
-            margin: 0 auto 20px; width: 250px; height: 250px;
-            display: flex; justify-content: center; align-items: center;
-        }
-        #qrcode img { width: 200px !important; height: 200px !important; }
-        .url-box { 
-            background: #111; border: 1px solid var(--border); padding: 15px; 
-            font-size: 10px; color: #888; word-break: break-all; margin-top: 10px;
-        }
+        #qr-wrap { background: white; padding: 20px; border-radius: 4px; margin: 0 auto 30px; display: none; width: 240px; height: 240px; }
+        #qr-wrap img { width: 200px !important; height: 200px !important; }
+        .url-text { font-size: 10px; color: #666; word-break: break-all; margin-bottom: 30px; display: none; cursor: pointer; }
 
-        /* File Preview */
-        .file-box { border: 1px dashed #444; padding: 30px; margin-bottom: 20px; }
-        .file-box:hover { border-color: #fff; background: #0a0a0a; }
-        .metadata { font-size: 11px; margin-top: 15px; display: none; text-align: left; border-top: 1px solid #222; pt-10px; }
+        /* File UI */
+        .drop-zone { border: 1px dashed #333; padding: 50px 20px; margin-bottom: 30px; position: relative; }
+        .drop-zone:hover { border-color: #fff; }
+        .meta-grid { text-align: left; font-size: 11px; margin-top: 20px; display: none; border-top: 1px solid #222; padding-top: 15px; }
+        .meta-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .label { color: #444; }
 
-        /* Transfer Stats */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; display: none; }
-        .stat-item { background: #111; padding: 10px; font-size: 10px; border: 1px solid #222; }
-        .stat-label { color: #555; display: block; margin-bottom: 4px; }
-
-        /* Progress */
-        .progress-container { width: 100%; margin-top: 30px; display: none; }
-        .bar-bg { height: 1px; background: #222; width: 100%; position: relative; }
-        .bar-fill { height: 1px; background: #fff; width: 0%; box-shadow: 0 0 10px #fff; }
-
-        /* Chat System */
-        #chat-area { margin-top: 30px; display: none; border-top: 1px solid #222; padding-top: 20px; }
-        #chat-msgs { height: 60px; overflow-y: auto; font-size: 10px; color: #888; text-align: left; margin-bottom: 10px; }
-        #chat-input { background: #000; border: 1px solid #222; color: #fff; width: 100%; padding: 8px; font-size: 10px; outline: none; }
+        /* Realtime Vitals */
+        #vitals { margin-top: 30px; display: none; }
+        .stat-row { display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-bottom: 10px; }
+        .progress-track { height: 1px; background: #111; position: relative; width: 100%; }
+        .progress-fill { height: 1px; background: #fff; width: 0%; box-shadow: 0 0 15px #fff; transition: width 0.1s; }
 
         .btn { 
             background: #fff; color: #000; padding: 20px; width: 100%; 
-            border: none; font-weight: 900; font-size: 12px; letter-spacing: 2px;
+            border: none; font-weight: 900; font-size: 13px; letter-spacing: 2px; cursor: pointer;
         }
-        .btn:disabled { background: #111; color: #333; }
+        .btn:disabled { background: #111; color: #333; cursor: default; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .status-msg { font-size: 10px; color: #fff; letter-spacing: 2px; margin-bottom: 20px; animation: pulse 2s infinite; }
     </style>
 </head>
 <body>
 
-<div class="vault-card" id="drop-zone">
+<div class="app-container">
     <div class="header">
-        <div class="logo">BEAM.v2</div>
-        <div class="node-status" id="status">OFFLINE</div>
+        <div class="logo">BEAM // TITANIUM</div>
+        <div class="os-tag" id="my-os">DETECTING...</div>
     </div>
 
-    <div class="file-box" id="file-display">
+    <div id="status-msg" class="status-msg">READY FOR SOURCE</div>
+
+    <div class="drop-zone" id="drop-zone">
         <input type="file" id="file-input" style="display:none">
-        <div id="prompt-text">DROP FILE OR CLICK TO INITIALIZE</div>
-        <div class="metadata" id="meta">
-            <div>NAME: <b id="m-name"></b></div>
-            <div>SIZE: <b id="m-size"></b></div>
+        <div id="prompt">TAP TO SELECT FILE</div>
+        <div class="meta-grid" id="meta-grid">
+            <div class="meta-item"><span class="label">FILE:</span><b id="m-name"></b></div>
+            <div class="meta-item"><span class="label">SIZE:</span><b id="m-size"></b></div>
+            <div class="meta-item"><span class="label">PEER:</span><b id="p-os">WAITING...</b></div>
         </div>
     </div>
 
-    <button class="btn" id="action-btn" onclick="document.getElementById('file-input').click()">SELECT SOURCE</button>
+    <div id="qr-wrap"></div>
+    <div id="url-text" class="url-text" onclick="copyUrl()"></div>
 
-    <div id="link-section">
-        <div id="qrcode"></div>
-        <div class="url-box" id="url-box" onclick="copyLink()">LOADING LINK...</div>
-    </div>
-
-    <div class="stats-grid" id="stats-grid">
-        <div class="stat-item"><span class="stat-label">SPEED</span><span id="s-speed">0 MB/s</span></div>
-        <div class="stat-item"><span class="stat-label">REMAINING</span><span id="s-time">--</span></div>
-    </div>
-
-    <div class="progress-container" id="prog-container">
-        <div class="bar-bg"><div class="bar-fill" id="bar-fill"></div></div>
-        <div style="display:flex; justify-content: space-between; font-size: 9px; margin-top: 10px;">
-            <span id="p-status">TRANSFERRING...</span>
-            <b id="p-pct">0%</b>
+    <div id="vitals">
+        <div class="stat-row">
+            <span id="v-speed">0.00 MB/s</span>
+            <span id="v-pct">0%</span>
         </div>
+        <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
     </div>
 
-    <div id="chat-area">
-        <div id="chat-msgs">SYSTEM: Awaiting encrypted link...</div>
-        <input type="text" id="chat-input" placeholder="Type message to peer...">
-    </div>
+    <button class="btn" id="action-btn" onclick="document.getElementById('file-input').click()">INITIALIZE</button>
 </div>
 
 <script>
     const peer = new Peer();
     let conn;
     let startTime;
-
-    // UI Elements
-    const status = document.getElementById('status');
-    const actionBtn = document.getElementById('action-btn');
-    const linkSection = document.getElementById('link-section');
-    const qrcodeDiv = document.getElementById('qrcode');
-    const urlBox = document.getElementById('url-box');
+    const myOS = navigator.platform.split(' ')[0];
+    document.getElementById('my-os').innerText = "LOCAL: " + myOS;
 
     peer.on('open', (id) => {
-        status.innerText = "NODE ONLINE: " + id.substring(0,8);
-        const urlId = new URLSearchParams(window.location.search).get('p');
-        if (urlId) initializeReceiver(urlId);
+        const pID = new URLSearchParams(window.location.search).get('p');
+        if (pID) startReceiver(pID);
     });
 
-    // Sender Logic
-    document.getElementById('file-input').onchange = (e) => handleFile(e.target.files[0]);
-    
-    function handleFile(file) {
+    // SENDER LOGIC
+    document.getElementById('file-input').onchange = (e) => {
+        const file = e.target.files[0];
         if (!file) return;
-        document.getElementById('prompt-text').style.display = 'none';
-        document.getElementById('meta').style.display = 'block';
+
+        // UI Prep
+        document.getElementById('prompt').style.display = 'none';
+        document.getElementById('meta-grid').style.display = 'block';
         document.getElementById('m-name').innerText = file.name;
-        document.getElementById('m-size').innerText = (file.size / (1024*1024)).toFixed(2) + " MB";
-
-        const shareUrl = `${window.location.origin}${window.location.pathname}?p=${peer.id}`;
-        linkSection.style.display = 'block';
-        urlBox.innerText = shareUrl;
+        document.getElementById('m-size').innerText = (file.size / 1048576).toFixed(2) + " MB";
         
-        // Render QR
-        qrcodeDiv.innerHTML = "";
-        new QRCode(qrcodeDiv, { text: shareUrl, width: 200, height: 200 });
+        const url = `${window.location.origin}${window.location.pathname}?p=${peer.id}`;
+        document.getElementById('qr-wrap').style.display = 'block';
+        document.getElementById('url-text').style.display = 'block';
+        document.getElementById('url-text').innerText = url;
+        new QRCode(document.getElementById('qr-wrap'), { text: url, width: 200, height: 200 });
 
-        actionBtn.innerText = "AWAITING RECEIVER...";
-        actionBtn.disabled = true;
+        document.getElementById('action-btn').innerText = "AWAITING PEER";
+        document.getElementById('action-btn').disabled = true;
 
         peer.on('connection', (c) => {
             conn = c;
-            setupChat();
             conn.on('open', () => {
-                conn.send({ type: 'meta', name: file.name, size: file.size });
-                startStreaming(file);
+                document.getElementById('status-msg').innerText = "PEER LINKED / BEAMING";
+                conn.send({ type: 'init', name: file.name, size: file.size, os: myOS });
+                streamFile(file);
+            });
+            conn.on('data', (d) => {
+                if(d.type === 'os') document.getElementById('p-os').innerText = d.os;
+                if(d.type === 'complete') resetApp("TRANSMISSION SUCCESSFUL");
             });
         });
-    }
+    };
 
-    async function startStreaming(file) {
-        document.getElementById('prog-container').style.display = 'block';
-        document.getElementById('stats-grid').style.display = 'grid';
+    async function streamFile(file) {
+        document.getElementById('vitals').style.display = 'block';
         startTime = Date.now();
-        
-        const chunkSize = 64 * 1024; // 64KB chunks for speed
+        const chunkSize = 128 * 1024; // 128KB Chunks for Speed
         let offset = 0;
 
         while (offset < file.size) {
             const chunk = await file.slice(offset, offset + chunkSize).arrayBuffer();
             conn.send({ type: 'chunk', data: chunk });
             offset += chunk.byteLength;
-            updateUI(offset, file.size);
+            updateStats(offset, file.size);
         }
         conn.send({ type: 'done' });
     }
 
-    // Receiver Logic
-    function initializeReceiver(pid) {
-        actionBtn.innerText = "CONNECTING...";
-        conn = peer.connect(pid);
-        setupChat();
-
-        let receivedSize = 0;
-        let totalSize = 0;
-        let name = "";
+    // RECEIVER LOGIC
+    function startReceiver(target) {
+        document.getElementById('action-btn').innerText = "CONNECTING...";
+        conn = peer.connect(target);
+        
         let chunks = [];
+        let received = 0;
+        let total = 0;
+        let name = "";
 
-        conn.on('data', (data) => {
-            if (data.type === 'meta') {
-                totalSize = data.size;
-                name = data.name;
-                document.getElementById('meta').style.display = 'block';
+        conn.on('open', () => {
+            conn.send({ type: 'os', os: myOS });
+            document.getElementById('status-msg').innerText = "LINKED TO SOURCE";
+        });
+
+        conn.on('data', (d) => {
+            if(d.type === 'init') {
+                total = d.size; name = d.name;
+                document.getElementById('p-os').innerText = d.os;
+                document.getElementById('meta-grid').style.display = 'block';
                 document.getElementById('m-name').innerText = name;
-                document.getElementById('m-size').innerText = (totalSize / (1024*1024)).toFixed(2) + " MB";
-                document.getElementById('prog-container').style.display = 'block';
-                document.getElementById('stats-grid').style.display = 'grid';
+                document.getElementById('m-size').innerText = (total / 1048576).toFixed(2) + " MB";
+                document.getElementById('vitals').style.display = 'block';
+                document.getElementById('prompt').style.display = 'none';
                 startTime = Date.now();
             }
-            if (data.type === 'chunk') {
-                chunks.push(data.data);
-                receivedSize += data.data.byteLength;
-                updateUI(receivedSize, totalSize);
+            if(d.type === 'chunk') {
+                chunks.push(d.data);
+                received += d.data.byteLength;
+                updateStats(received, total);
             }
-            if (data.type === 'done') {
+            if(d.type === 'done') {
                 const blob = new Blob(chunks);
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url; a.download = name; a.click();
-                status.innerText = "BEAM COMPLETE";
+                conn.send({ type: 'complete' });
+                resetApp("FILE RECEIVED");
             }
         });
     }
 
-    function updateUI(current, total) {
-        const pct = Math.floor((current / total) * 100);
-        document.getElementById('bar-fill').style.width = pct + "%";
-        document.getElementById('p-pct').innerText = pct + "%";
-        
-        const elapsed = (Date.now() - startTime) / 1000;
-        const speed = (current / (1024 * 1024)) / elapsed;
-        document.getElementById('s-speed').innerText = speed.toFixed(2) + " MB/s";
-        
-        const remaining = (total - current) / (current / elapsed);
-        document.getElementById('s-time').innerText = remaining.toFixed(1) + "s";
+    function updateStats(cur, tot) {
+        const pct = Math.floor((cur / tot) * 100);
+        document.getElementById('fill').style.width = pct + "%";
+        document.getElementById('v-pct').innerText = pct + "%";
+        const speed = (cur / 1048576) / ((Date.now() - startTime) / 1000);
+        document.getElementById('v-speed').innerText = speed.toFixed(2) + " MB/s";
     }
 
-    function setupChat() {
-        document.getElementById('chat-area').style.display = 'block';
-        const input = document.getElementById('chat-input');
-        input.onkeypress = (e) => {
-            if (e.key === 'Enter') {
-                conn.send({ type: 'chat', msg: input.value });
-                addMsg("YOU: " + input.value);
-                input.value = "";
-            }
-        };
-        conn.on('data', (data) => {
-            if (data.type === 'chat') addMsg("PEER: " + data.msg);
-        });
+    function resetApp(msg) {
+        setTimeout(() => {
+            window.location.href = window.location.origin + window.location.pathname;
+        }, 3000); // 3-second delay to show success
+        document.getElementById('status-msg').innerText = msg;
+        document.getElementById('fill').style.width = "100%";
     }
 
-    function addMsg(m) {
-        const msgs = document.getElementById('chat-msgs');
-        msgs.innerHTML += `<div>${m}</div>`;
-        msgs.scrollTop = msgs.scrollHeight;
-    }
-
-    function copyLink() {
-        navigator.clipboard.writeText(urlBox.innerText);
-        urlBox.innerText = "COPIED TO CLIPBOARD";
-        setTimeout(() => urlBox.innerText = urlBox.innerText, 2000);
+    function copyUrl() {
+        navigator.clipboard.writeText(document.getElementById('url-text').innerText);
+        document.getElementById('url-text').innerText = "COPIED TO CLIPBOARD";
     }
 </script>
-
 </body>
 </html>
