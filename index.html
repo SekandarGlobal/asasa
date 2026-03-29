@@ -3,137 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liquid P2P | Instant Beam</title>
+    <title>LIQUID P2P | MONO</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --accent: #00d4ff; --bg: #0a0a0c; --glass: rgba(255, 255, 255, 0.05); }
+        :root { --bg: #000000; --fg: #ffffff; --border: rgba(255, 255, 255, 0.15); --dim: #888888; }
+        * { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         body { 
-            background: radial-gradient(circle at top, #161625, var(--bg)); 
-            color: white; font-family: 'Inter', sans-serif;
+            background-color: var(--bg); color: var(--fg); 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;
+            overflow: hidden;
         }
         .vault-card { 
-            background: var(--glass); backdrop-filter: blur(30px); 
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 35px;
-            padding: 40px; width: 90%; max-width: 420px; text-align: center;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+            background: #050505; border: 1px solid var(--border); border-radius: 20px;
+            padding: 40px; width: 95%; max-width: 440px; text-align: center;
+            box-shadow: 0 40px 100px rgba(0,0,0,1);
         }
-        h1 { font-weight: 200; letter-spacing: 5px; margin-bottom: 5px; font-size: 22px; color: var(--accent); }
-        .status-bar { font-size: 10px; opacity: 0.5; text-transform: uppercase; margin-bottom: 25px; letter-spacing: 1px; }
+        h1 { font-weight: 800; letter-spacing: -1px; margin: 0 0 10px 0; font-size: 28px; }
+        .live-indicator { 
+            display: inline-flex; align-items: center; font-size: 10px; font-weight: 700;
+            letter-spacing: 1px; color: var(--dim); margin-bottom: 30px;
+        }
+        .live-dot { width: 6px; height: 6px; background: white; border-radius: 50%; margin-right: 8px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        .file-info { background: #111; border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; text-align: left; }
+        .file-info p { margin: 5px 0; font-size: 13px; }
+        .file-info span { color: var(--dim); }
+
         .btn { 
-            background: white; color: black; padding: 18px; border-radius: 18px; 
-            font-weight: bold; cursor: pointer; border: none; width: 100%; transition: 0.3s;
+            background: var(--fg); color: var(--bg); padding: 18px; border-radius: 12px; 
+            font-weight: 700; cursor: pointer; border: none; width: 100%; font-size: 14px;
         }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
-        #link-display { 
-            margin-top: 20px; background: rgba(0,0,0,0.3); padding: 12px; 
-            border-radius: 12px; font-size: 11px; color: var(--accent);
-            word-break: break-all; border: 1px solid rgba(0,212,255,0.1); cursor: pointer;
-        }
-        #qrcode { 
-            background: white; padding: 15px; border-radius: 15px; 
-            margin: 20px auto; display: none; width: 128px; height: 128px;
-        }
-        .progress-container { width: 100%; background: rgba(255,255,255,0.1); height: 4px; border-radius: 10px; margin-top: 20px; display: none; overflow: hidden; }
-        #progress-bar { width: 0%; height: 100%; background: var(--accent); transition: 0.2s; }
+        .btn:hover:not(:disabled) { transform: translateY(-2px); filter: invert(0.1); }
+        .btn:disabled { background: #222; color: #555; cursor: not-allowed; }
+
+        #link-section { margin-top: 25px; display: none; }
+        #qrcode { background: white; padding: 12px; border-radius: 8px; margin: 0 auto 20px; width: 152px; }
+        .copy-url { font-size: 11px; color: var(--dim); cursor: pointer; border-bottom: 1px solid transparent; }
+        .copy-url:hover { color: white; border-color: white; }
+
+        .progress-wrap { width: 100%; margin-top: 30px; display: none; }
+        .progress-meta { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 8px; color: var(--dim); }
+        .progress-track { height: 2px; background: #222; border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; background: white; width: 0%; transition: width 0.1s; }
     </style>
 </head>
 <body>
 
 <div class="vault-card">
-    <h1>LIQUID P2P</h1>
-    <div class="status-bar" id="status">System Standby</div>
+    <div class="live-indicator"><span class="live-dot"></span><span id="status">P2P STANDBY</span></div>
+    <h1>BEAM.</h1>
     
-    <div id="setup-ui">
-        <input type="file" id="file-input" style="display:none">
-        <button class="btn" id="main-btn" onclick="document.getElementById('file-input').click()">SELECT FILE TO BEAM</button>
-        
-        <div id="qrcode"></div>
-        <div id="link-display" onclick="copyLink()"></div>
+    <div class="file-info" id="filePreview">
+        <p><span>NAME:</span> <b id="pName">-</b></p>
+        <p><span>SIZE:</span> <b id="pSize">-</b></p>
     </div>
 
-    <div class="progress-container" id="p-container">
-        <div id="progress-bar"></div>
+    <div id="setup-ui">
+        <input type="file" id="file-input" style="display:none">
+        <button class="btn" id="main-btn" onclick="document.getElementById('file-input').click()">INITIALIZE TRANSFER</button>
+        
+        <div id="link-section">
+            <div id="qrcode"></div>
+            <span class="copy-url" onclick="copyLink()">COPY SHAREABLE LINK</span>
+        </div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+        <div class="progress-meta">
+            <span id="pStatus">TRANSFERRING</span>
+            <span id="pPercent">0%</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
     </div>
 </div>
 
 <script>
     const peer = new Peer(); 
+    let activeConn = null;
+    let fileBuffer = [];
+    let bytesReceived = 0;
+    let totalSize = 0;
+
     const status = document.getElementById('status');
-    const linkDisplay = document.getElementById('link-display');
-    const qrcodeDiv = document.getElementById('qrcode');
     const mainBtn = document.getElementById('main-btn');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressFill = document.getElementById('progressFill');
 
     peer.on('open', (id) => {
-        status.innerText = "Secure Node Active";
-        
-        // Logic for the RECEIVER
+        status.innerText = "NODE SECURE / ID: " + id.substring(0,6);
         const urlParams = new URLSearchParams(window.location.search);
-        const senderId = urlParams.get('p');
-        if (senderId) {
-            connectToSender(senderId);
-        }
+        const p = urlParams.get('p');
+        if (p) initializeReceiver(p);
     });
 
-    // Logic for the SENDER
+    // SENDER LOGIC
     document.getElementById('file-input').onchange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const shareUrl = `${window.location.origin}${window.location.pathname}?p=${peer.id}`;
+        const url = `${window.location.origin}${window.location.pathname}?p=${peer.id}`;
+        document.getElementById('link-section').style.display = "block";
+        document.getElementById('qrcode').innerHTML = "";
+        new QRCode(document.getElementById('qrcode'), { text: url, width: 128, height: 128, colorDark : "#000000", colorLight : "#ffffff" });
         
-        // Show Link & QR Code
-        linkDisplay.innerText = shareUrl;
-        linkDisplay.style.display = "block";
-        qrcodeDiv.style.display = "block";
-        qrcodeDiv.innerHTML = "";
-        new QRCode(qrcodeDiv, { text: shareUrl, width: 128, height: 128 });
-        
-        mainBtn.innerText = "WAITING FOR BEAM...";
+        mainBtn.innerText = "WAITING FOR PEER...";
         mainBtn.disabled = true;
-        status.innerText = "Awaiting Receiver Connection";
 
         peer.on('connection', (conn) => {
-            status.innerText = "Receiver Connected";
+            activeConn = conn;
+            status.innerText = "PEER LINKED";
+            
             conn.on('open', () => {
-                status.innerText = "Streaming Data...";
-                conn.send({
-                    file: file,
-                    name: file.name,
-                    type: file.type
-                });
+                // Send metadata first
+                conn.send({ type: 'metadata', name: file.name, size: file.size });
+                
+                // Show progress on sender side too
+                progressWrap.style.display = "block";
+                streamFile(file, conn);
+            });
+
+            // Listen for feedback from receiver
+            conn.on('data', (data) => {
+                if(data.type === 'received') status.innerText = "TRANSFER SUCCESSFUL";
             });
         });
     };
 
-    function connectToSender(senderId) {
-        mainBtn.innerText = "CONNECTING...";
-        mainBtn.disabled = true;
-        status.innerText = "Syncing with Node...";
+    async function streamFile(file, conn) {
+        const chunkSize = 16384; // 16KB
+        let offset = 0;
 
-        const conn = peer.connect(senderId);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            conn.send({ type: 'chunk', data: e.target.result });
+            offset += e.target.result.byteLength;
+            const pct = Math.floor((offset / file.size) * 100);
+            updateProgress(pct);
+
+            if (offset < file.size) {
+                readNextChunk();
+            } else {
+                conn.send({ type: 'complete' });
+            }
+        };
+
+        function readNextChunk() {
+            const slice = file.slice(offset, offset + chunkSize);
+            reader.readAsArrayBuffer(slice);
+        }
+
+        readNextChunk();
+    }
+
+    // RECEIVER LOGIC
+    function initializeReceiver(targetId) {
+        mainBtn.disabled = true;
+        mainBtn.innerText = "CONNECTING...";
+        
+        const conn = peer.connect(targetId);
+
+        conn.on('open', () => {
+            status.innerText = "LINK ESTABLISHED";
+            progressWrap.style.display = "block";
+        });
 
         conn.on('data', (data) => {
-            status.innerText = "Downloading...";
-            document.getElementById('p-container').style.display = "block";
-            document.getElementById('progress-bar').style.width = "100%";
+            if (data.type === 'metadata') {
+                totalSize = data.size;
+                document.getElementById('filePreview').style.display = "block";
+                document.getElementById('pName').innerText = data.name;
+                document.getElementById('pSize').innerText = (totalSize / (1024*1024)).toFixed(2) + " MB";
+            }
 
-            const blob = new Blob([data.file], { type: data.type });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = data.name;
-            a.click();
-            
-            status.innerText = "Transmission Complete";
-            mainBtn.innerText = "FILE RECEIVED";
+            if (data.type === 'chunk') {
+                fileBuffer.push(data.data);
+                bytesReceived += data.data.byteLength;
+                updateProgress(Math.floor((bytesReceived / totalSize) * 100));
+            }
+
+            if (data.type === 'complete') {
+                const blob = new Blob(fileBuffer);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = document.getElementById('pName').innerText;
+                a.click();
+                
+                status.innerText = "COMPLETED";
+                document.getElementById('pStatus').innerText = "DONE";
+                conn.send({ type: 'received' });
+            }
         });
     }
 
+    function updateProgress(pct) {
+        progressFill.style.width = pct + "%";
+        document.getElementById('pPercent').innerText = pct + "%";
+    }
+
     function copyLink() {
-        navigator.clipboard.writeText(linkDisplay.innerText);
-        alert("Link copied to clipboard!");
+        const url = `${window.location.origin}${window.location.pathname}?p=${peer.id}`;
+        navigator.clipboard.writeText(url);
+        const copyBtn = document.querySelector('.copy-url');
+        copyBtn.innerText = "COPIED!";
+        setTimeout(() => copyBtn.innerText = "COPY SHAREABLE LINK", 2000);
     }
 </script>
 
